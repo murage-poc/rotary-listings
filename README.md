@@ -36,3 +36,38 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+# Airbnb POC
+
+## Setup
+
+1. Copy the example env file and fill in your secrets:
+   ```sh
+   cp .env.example .env
+   # Edit .env to set your actual credentials
+   ```
+
+2. Source your environment variables before running the dev server:
+   ```sh
+   source .env
+   ```
+
+3. Install dependencies:
+   ```sh
+   pnpm install
+   ```
+
+4. Run database migrations (requires [dbmate](https://github.com/amacneil/dbmate)):
+   ```sh
+   dbmate --url "$DATABASE_URL" up
+   ```
+
+5. Start the dev server:
+   ```sh
+   pnpm dev
+   ```
+
+## Notes
+- All secrets and credentials must be set in your .env file.
+- Migrations are managed with dbmate and raw SQL in the `migrations/` folder.
+- Static assets are stored in S3-compatible storage (MinIO for dev, but any S3-compatible provider works with S3_ env vars).
