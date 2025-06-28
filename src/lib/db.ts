@@ -1,12 +1,34 @@
-import { Kysely, PostgresDialect } from 'kysely';
+import { Kysely, PostgresDialect, Generated } from 'kysely';
 import { Pool } from 'pg';
 
-// Define your database schema types here
+export interface HostsTable {
+  id: Generated<number>;
+  name: string;
+  avatar_url: string | null;
+}
+
+export interface ListingsTable {
+  id: Generated<number>;
+  title: string;
+  description: string;
+  price_per_guest: number;
+  host_id: number;
+  category: string;
+  location: string;
+  created_at: Generated<Date>;
+}
+
+export interface ImagesTable {
+  id: Generated<number>;
+  listing_id: number;
+  url: string;
+  alt: string | null;
+}
+
 export interface Database {
-  // Example:
-  // listings: ListingsTable;
-  // images: ImagesTable;
-  // hosts: HostsTable;
+  hosts: HostsTable;
+  listings: ListingsTable;
+  images: ImagesTable;
 }
 
 const dialect = new PostgresDialect({
