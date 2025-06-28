@@ -1,21 +1,18 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
-if (!process.env.S3_ENDPOINT || !process.env.S3_ACCESS_KEY || !process.env.S3_SECRET_KEY || !process.env.S3_BUCKET) {
-  throw new Error('S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, and S3_BUCKET env variables are required');
-}
+import { S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET } from './env';
 
 const s3 = new S3Client({
-  region: 'us-east-1', // S3-compatible storage ignores region but AWS SDK requires it
-  endpoint: process.env.S3_ENDPOINT,
+  region: 'us-east-1',
+  endpoint: S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_KEY,
+    accessKeyId: S3_ACCESS_KEY,
+    secretAccessKey: S3_SECRET_KEY,
   },
-  forcePathStyle: true, // Required for MinIO and some S3-compatible providers
+  forcePathStyle: true,
 });
 
-const BUCKET = process.env.S3_BUCKET;
+const BUCKET = S3_BUCKET;
 
 export async function uploadImage({
   key,
