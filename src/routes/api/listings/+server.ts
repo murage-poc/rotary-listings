@@ -4,7 +4,9 @@ import { db } from '$lib/db';
 export const GET: RequestHandler = async ({ url }) => {
   const listings = await db
     .selectFrom('listings')
-    .selectAll()
+    .leftJoin('images', 'images.listing_id', 'listings.id')
+    .select([ 'listings.*', 'images.url as image_key' ])
+    .groupBy('listings.id', 'images.url')
     .execute();
   return json(listings);
 };
