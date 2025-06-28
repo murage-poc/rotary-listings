@@ -18,6 +18,13 @@
   };
   let creating = false;
   let errorMsg = '';
+  let showCreateHostModal = false;
+  let hostForm = {
+    name: '',
+    avatar: null as File | null
+  };
+  let creatingHost = false;
+  let hostErrorMsg = '';
 
   async function getSignedUrl(key: string): Promise<string | null> {
     if (!key) return null;
@@ -96,6 +103,31 @@
       errorMsg = e.message || 'Error creating listing';
     } finally {
       creating = false;
+    }
+  }
+
+  async function createHost(event: Event) {
+    event.preventDefault();
+    creatingHost = true;
+    hostErrorMsg = '';
+    try {
+      // Create host
+      const res = await fetch('/api/hosts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: hostForm.name, avatar_url: null })
+      });
+      if (!res.ok) throw new Error('Failed to create host');
+      // Optionally, upload avatar image (not implemented in backend yet)
+      // Refresh hosts
+      const hostRes = await fetch('/api/hosts');
+      hosts = await hostRes.json();
+      showCreateHostModal = false;
+      hostForm = { name: '', avatar: null };
+    } catch (e: any) {
+      hostErrorMsg = e.message || 'Error creating host';
+    } finally {
+      creatingHost = false;
     }
   }
 </script>
@@ -197,6 +229,36 @@
           }} />
           <button class="w-full bg-pink-500 text-white py-2 rounded font-semibold hover:bg-pink-600 transition" type="submit" disabled={creating}>
             {creating ? 'Creating...' : 'Create Listing'}
+          </button>
+        </form>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Create Host Button -->
+  <div class="flex justify-end px-6">
+    <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-semibold shadow hover:bg-gray-300 transition" onclick={() => showCreateHostModal = true}>
+      + Create Host
+    </button>
+  </div>
+
+  <!-- Create Host Modal -->
+  {#if showCreateHostModal}
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onclick={() => showCreateHostModal = false}>&times;</button>
+        <h2 class="text-xl font-bold mb-4">Create Host</h2>
+        {#if hostErrorMsg}
+          <div class="text-red-500 mb-2">{hostErrorMsg}</div>
+        {/if}
+        <form onsubmit={createHost} class="space-y-4">
+          <input class="w-full border rounded px-3 py-2" placeholder="Name" bind:value={hostForm.name} required />
+          <input class="w-full" type="file" accept="image/*" oninput={e => {
+            const input = e.target as HTMLInputElement | null;
+            hostForm.avatar = input && input.files ? input.files[0] : null;
+          }} />
+          <button class="w-full bg-gray-700 text-white py-2 rounded font-semibold hover:bg-gray-800 transition" type="submit" disabled={creatingHost}>
+            {creatingHost ? 'Creating...' : 'Create Host'}
           </button>
         </form>
       </div>
