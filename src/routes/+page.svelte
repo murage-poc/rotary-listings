@@ -3,9 +3,27 @@
   let listings: any[] = [];
   let loading = true;
 
+  async function getSignedUrl(key: string): Promise<string | null> {
+    if (!key) return null;
+    const res = await fetch(`/api/images?key=${encodeURIComponent(key)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url;
+  }
+
   onMount(async () => {
     const res = await fetch('/api/listings');
-    listings = await res.json();
+    const rawListings = await res.json();
+    // Fetch signed URLs for images
+    listings = await Promise.all(
+      rawListings.map(async (listing: any) => {
+        let imageUrl = null;
+        if (listing.image_key) {
+          imageUrl = await getSignedUrl(listing.image_key);
+        }
+        return { ...listing, imageUrl };
+      })
+    );
     loading = false;
   });
 </script>
@@ -37,8 +55,11 @@
         {#each listings as listing}
           <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col">
             <div class="aspect-w-16 aspect-h-9 bg-gray-200 flex items-center justify-center">
-              <!-- TODO: Replace with image from API -->
-              <span class="text-gray-400">Image</span>
+              {#if listing.imageUrl}
+                <img src={listing.imageUrl} alt={listing.title} class="object-cover w-full h-full" />
+              {:else}
+                <span class="text-gray-400">Image</span>
+              {/if}
             </div>
             <div class="p-4 flex-1 flex flex-col">
               <h3 class="font-bold text-lg mb-1">{listing.title}</h3>
