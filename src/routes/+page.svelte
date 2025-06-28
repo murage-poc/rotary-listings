@@ -5,6 +5,19 @@
   let search = '';
   let selectedCategory = 'All';
   let categories: string[] = ['All'];
+  let hosts: any[] = [];
+  let showCreateModal = false;
+  let form = {
+    title: '',
+    description: '',
+    price_per_guest: '',
+    category: '',
+    location: '',
+    host_id: '',
+    image: null as File | null
+  };
+  let creating = false;
+  let errorMsg = '';
 
   async function getSignedUrl(key: string): Promise<string | null> {
     if (!key) return null;
@@ -14,7 +27,7 @@
     return data.url;
   }
 
-  onMount(async () => {
+  async function fetchListingsAndCategories() {
     // Fetch categories from API
     const catRes = await fetch('/api/categories');
     const apiCategories = await catRes.json();
@@ -32,6 +45,13 @@
         return { ...listing, imageUrl };
       })
     );
+  }
+
+  onMount(async () => {
+    await fetchListingsAndCategories();
+    // Fetch hosts
+    const hostRes = await fetch('/api/hosts');
+    hosts = await hostRes.json();
     loading = false;
   });
 
@@ -39,6 +59,45 @@
     (selectedCategory === 'All' || l.category === selectedCategory) &&
     (l.title.toLowerCase().includes(search.toLowerCase()) || l.location.toLowerCase().includes(search.toLowerCase()))
   );
+
+  async function createListing(event: Event) {
+    event.preventDefault();
+    creating = true;
+    errorMsg = '';
+    try {
+      // Create listing
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          price_per_guest: Number(form.price_per_guest),
+          host_id: Number(form.host_id),
+          category: form.category,
+          location: form.location
+        })
+      });
+      if (!res.ok) throw new Error('Failed to create listing');
+      const listing = await res.json();
+      // Upload image if present
+      if (form.image) {
+        const imgForm = new FormData();
+        imgForm.append('file', form.image);
+        imgForm.append('listing_id', listing.id);
+        await fetch('/api/images', { method: 'POST', body: imgForm });
+      }
+      // Refresh listings
+      await fetchListingsAndCategories();
+      showCreateModal = false;
+      // Reset form
+      form = { title: '', description: '', price_per_guest: '', category: '', location: '', host_id: '', image: null };
+    } catch (e: any) {
+      errorMsg = e.message || 'Error creating listing';
+    } finally {
+      creating = false;
+    }
+  }
 </script>
 
 <main class="min-h-screen bg-gray-50">
@@ -98,4 +157,49 @@
       </div>
     {/if}
   </section>
+
+  <!-- Create Listing Button -->
+  <div class="flex justify-end p-6">
+    <button class="bg-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow hover:bg-pink-600 transition" onclick={() => showCreateModal = true}>
+      + Create Listing
+    </button>
+  </div>
+
+  <!-- Create Listing Modal -->
+  {#if showCreateModal}
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onclick={() => showCreateModal = false}>&times;</button>
+        <h2 class="text-xl font-bold mb-4">Create Listing</h2>
+        {#if errorMsg}
+          <div class="text-red-500 mb-2">{errorMsg}</div>
+        {/if}
+        <form onsubmit={createListing} class="space-y-4">
+          <input class="w-full border rounded px-3 py-2" placeholder="Title" bind:value={form.title} required />
+          <textarea class="w-full border rounded px-3 py-2" placeholder="Description" bind:value={form.description} required></textarea>
+          <input class="w-full border rounded px-3 py-2" placeholder="Location" bind:value={form.location} required />
+          <input class="w-full border rounded px-3 py-2" type="number" placeholder="Price per guest" bind:value={form.price_per_guest} required min="1" />
+          <select class="w-full border rounded px-3 py-2" bind:value={form.category} required>
+            <option value="" disabled selected>Select category</option>
+            {#each categories.filter(c => c !== 'All') as category}
+              <option value={category}>{category}</option>
+            {/each}
+          </select>
+          <select class="w-full border rounded px-3 py-2" bind:value={form.host_id} required>
+            <option value="" disabled selected>Select host</option>
+            {#each hosts as host}
+              <option value={host.id}>{host.name}</option>
+            {/each}
+          </select>
+          <input class="w-full" type="file" accept="image/*" oninput={e => {
+            const input = e.target as HTMLInputElement | null;
+            form.image = input && input.files ? input.files[0] : null;
+          }} />
+          <button class="w-full bg-pink-500 text-white py-2 rounded font-semibold hover:bg-pink-600 transition" type="submit" disabled={creating}>
+            {creating ? 'Creating...' : 'Create Listing'}
+          </button>
+        </form>
+      </div>
+    </div>
+  {/if}
 </main>
