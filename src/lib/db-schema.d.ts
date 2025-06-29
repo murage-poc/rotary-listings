@@ -13,31 +13,40 @@ export type Numeric = ColumnType<string, number | string, number | string>;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Categories {
+  created_at: Generated<Timestamp | null>;
+  id: Generated<number>;
+  name: string;
+}
+
 export interface Hosts {
   avatar_url: string | null;
+  created_at: Generated<Timestamp | null>;
   id: Generated<number>;
   name: string;
 }
 
 export interface Images {
   alt: string | null;
+  created_at: Generated<Timestamp | null>;
   id: Generated<number>;
   listing_id: number;
   url: string;
 }
 
 export interface Listings {
-  category: string;
-  created_at: Generated<Timestamp>;
-  description: string;
+  category_id: number;
+  created_at: Generated<Timestamp | null>;
+  description: string | null;
   host_id: number;
   id: Generated<number>;
-  location: string;
+  location: string | null;
   price_per_guest: Numeric;
   title: string;
 }
 
 export interface DB {
+  categories: Categories;
   hosts: Hosts;
   images: Images;
   listings: Listings;
