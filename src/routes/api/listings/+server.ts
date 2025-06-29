@@ -1,15 +1,34 @@
 import { json, error, type RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/db';
+import { getImageUrl } from '$lib/s3';
 
 export const GET: RequestHandler = async ({ url }) => {
-  const listings = await db
+  const category = url.searchParams.get('category');
+  let query = db
     .selectFrom('listings')
     .leftJoin('images', 'images.listing_id', 'listings.id')
     .selectAll('listings')
     .select(db.fn.min('images.url').as('image_key'))
-    .groupBy('listings.id')
-    .execute();
-  return json(listings);
+    .groupBy('listings.id');
+
+  if (category && category !== 'All') {
+    query = query.where('listings.category', '=', category);
+  }
+
+  const listings = await query.execute();
+  
+  // Generate signed URLs for images
+  const listingsWithImages = await Promise.all(
+    listings.map(async (listing) => {
+      let imageUrl = null;
+      if (listing.image_key) {
+        imageUrl = await getImageUrl(listing.image_key);
+      }
+      return { ...listing, imageUrl };
+    })
+  );
+
+  return json(listingsWithImages);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
