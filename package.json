@@ -13,6 +13,7 @@
 		"db:migrate": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') up",
 		"db:cm": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') new",
 		"db:rollback": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') rollback",
+		"db:seed": "node $([[ -f ./.env ]] && echo '--env-file ./.env') scripts/seeders/aws-images.js && node $([[ -f ./.env ]] && echo '--env-file ./.env') scripts/seeders/db.js",
 		"db:generate:types": "[ -f ./.env ] && . ./.env; kysely-codegen --out-file src/lib/db-schema.d.ts --default-schema=${DB_SCHEMA} --dialect=${DB_CONNECTION} --exclude-pattern='*.(migrations|seed_migrations)'",
 		"generate": "pnpm run db:generate:types"
 	},
