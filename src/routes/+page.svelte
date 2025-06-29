@@ -56,12 +56,10 @@
 
   // When a category is selected, update state and URL
   function selectCategory(category: string) {
-
     // Update URL
     const url = new URL(page.url);
     url.searchParams.set('category', category);
-    goto(url.toString(), { replaceState: true });
-
+    goto(url.toString(), { replaceState: false });
   }
 
   async function createListing(event: Event) {
