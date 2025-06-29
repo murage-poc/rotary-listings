@@ -114,8 +114,9 @@
 
       <form onsubmit={createListing} class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <label for="listing-title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
           <input 
+            id="listing-title"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             placeholder="Enter listing title" 
             bind:value={form.title} 
@@ -124,8 +125,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <label for="listing-description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
           <textarea 
+            id="listing-description"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             placeholder="Describe your property" 
             bind:value={form.description} 
@@ -135,8 +137,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <label for="listing-location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
           <input 
+            id="listing-location"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             placeholder="Enter property location" 
             bind:value={form.location} 
@@ -145,8 +148,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Price per Guest</label>
+          <label for="listing-price" class="block text-sm font-medium text-gray-700 mb-2">Price per Guest</label>
           <input 
+            id="listing-price"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             type="number" 
             placeholder="Enter price per guest" 
@@ -157,9 +161,10 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+          <label for="listing-category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
           <div class="flex gap-2">
             <select 
+              id="listing-category"
               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
               bind:value={form.category} 
               required
@@ -182,8 +187,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Host</label>
+          <label for="listing-host" class="block text-sm font-medium text-gray-700 mb-2">Host</label>
           <select 
+            id="listing-host"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             bind:value={form.host_id} 
             required
@@ -198,8 +204,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Property Image</label>
+          <label for="listing-image" class="block text-sm font-medium text-gray-700 mb-2">Property Image</label>
           <input 
+            id="listing-image"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
             type="file" 
             accept="image/*" 
@@ -252,8 +259,9 @@
 
         <form onsubmit={createCategory} class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+            <label for="category-name" class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
             <input 
+              id="category-name"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
               placeholder="Enter category name" 
               bind:value={newCategoryName} 

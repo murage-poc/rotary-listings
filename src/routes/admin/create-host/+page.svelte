@@ -52,8 +52,9 @@
 
       <form onsubmit={createHost} class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Host Name</label>
+          <label for="host-name" class="block text-sm font-medium text-gray-700 mb-2">Host Name</label>
           <input 
+            id="host-name"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
             placeholder="Enter host name" 
             bind:value={hostForm.name} 
@@ -62,8 +63,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Profile Image (Optional)</label>
+          <label for="host-avatar" class="block text-sm font-medium text-gray-700 mb-2">Profile Image (Optional)</label>
           <input 
+            id="host-avatar"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
             type="file" 
             accept="image/*" 
