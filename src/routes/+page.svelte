@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { pushState } from '$app/navigation';
+  import { page } from '$app/state';
   import type { PageProps } from './$types';
 
-  let { data }: PageProps = $props();
-  const { listings, categories, hosts, selectedCategory } = data;
+  const { data }: PageProps = $props();
+  
+  // Get categories and hosts from page data
+  const { categories, hosts } = data;
 
-  // Use $state for local UI state only
+  // Use $state for local UI state
+  let listings = $state<any[]>([]);
+  let selectedCategory = $state(page.url.searchParams.get('category') || '');
+  let loading = $state(false);
   let showCreateModal = $state(false);
   let showCreateHostModal = $state(false);
   let form = $state({
@@ -23,9 +29,45 @@
   let creatingHost = $state(false);
   let hostErrorMsg = $state('');
 
-  // When a category is selected, update the URL (triggers reload)
+  // Function to fetch listings based on category
+  async function fetchListings(category: string) {
+    loading = true;
+    try {
+      let apiUrl = '/api/listings';
+      if (category) {
+        apiUrl += `?category=${encodeURIComponent(category)}`;
+      }
+      const res = await fetch(apiUrl);
+      listings = await res.json();
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      listings = [];
+    } finally {
+      loading = false;
+    }
+  }
+
+  // Fetch listings on mount
+  fetchListings(selectedCategory);
+
+  // Refetch when category changes
+  $effect(() => {
+    if (selectedCategory !== undefined) {
+      fetchListings(selectedCategory);
+    }
+  });
+
+  // When a category is selected, update state and URL
   function selectCategory(category: string) {
-    goto(`/?category=${encodeURIComponent(category)}`);
+    selectedCategory = category;
+    
+    // Update URL using pushState
+    if (category === '') {
+      page.url.searchParams.delete('category');
+    } else {
+      page.url.searchParams.set('category', category);
+    }
+    pushState(page.url, page.state);
   }
 
   async function createListing(event: Event) {
@@ -53,8 +95,8 @@
         imgForm.append('listing_id', listing.id);
         await fetch('/api/images', { method: 'POST', body: imgForm });
       }
-      // After creation, reload the page to get fresh data
-      goto(window.location.pathname + window.location.search, { replaceState: true });
+      // After creation, refetch listings
+      await fetchListings(selectedCategory);
       showCreateModal = false;
       form = { title: '', description: '', price_per_guest: '', category: '', location: '', host_id: '', image: null };
     } catch (e: any) {
@@ -75,8 +117,8 @@
         body: JSON.stringify({ name: hostForm.name, avatar_url: null })
       });
       if (!res.ok) throw new Error('Failed to create host');
-      // After creation, reload the page to get fresh data
-      goto(window.location.pathname + window.location.search, { replaceState: true });
+      // After creation, refetch listings
+      await fetchListings(selectedCategory);
       showCreateHostModal = false;
       hostForm = { name: '', avatar: null };
     } catch (e: any) {
@@ -105,6 +147,15 @@
 
   <section class="p-6">
     <div class="flex gap-2 overflow-x-auto pb-4 mb-4">
+      <!-- Static "All" button -->
+      <button
+        class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === '' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
+        onclick={() => selectCategory('')}
+      >
+        All
+      </button>
+      
+      <!-- Dynamic category buttons -->
       {#if categories}
         {#each categories as category}
           <button
@@ -170,7 +221,7 @@
           <select class="w-full border rounded px-3 py-2" bind:value={form.category} required>
             <option value="" disabled selected>Select category</option>
             {#if categories}
-              {#each categories.filter((c: string) => c !== 'All') as category}
+              {#each categories as category}
                 <option value={category}>{category}</option>
               {/each}
             {/if}

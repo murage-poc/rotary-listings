@@ -1,23 +1,14 @@
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ fetch, url }) => {
-  const category = url.searchParams.get('category') || 'All';
+export const load: PageLoad = async ({ fetch }) => {
+  // Fetch static data once (categories and hosts)
+  const [catRes, hostRes] = await Promise.all([
+    fetch('/api/categories'),
+    fetch('/api/hosts')
+  ]);
 
-  // Fetch categories
-  const catRes = await fetch('/api/categories');
-  const categories = ['All', ...(await catRes.json())];
-
-  // Fetch listings
-  let apiUrl = '/api/listings';
-  if (category !== 'All') {
-    apiUrl += `?category=${encodeURIComponent(category)}`;
-  }
-  const res = await fetch(apiUrl);
-  const listings = await res.json();
-
-  // Fetch hosts
-  const hostRes = await fetch('/api/hosts');
+  const categories = await catRes.json();
   const hosts = await hostRes.json();
 
-  return { listings, categories, hosts, selectedCategory: category };
+  return { categories, hosts };
 }; 
