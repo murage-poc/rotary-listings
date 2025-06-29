@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  let listings: any[] = [];
-  let loading = true;
-  let search = '';
-  let selectedCategory = 'All';
-  let categories: string[] = ['All'];
-  let hosts: any[] = [];
-  let showCreateModal = false;
-  let form = {
+  import { goto } from '$app/navigation';
+  import type { PageProps } from './$types';
+
+  let { data }: PageProps = $props();
+  const { listings, categories, hosts, selectedCategory } = data;
+
+  // Use $state for local UI state only
+  let showCreateModal = $state(false);
+  let showCreateHostModal = $state(false);
+  let form = $state({
     title: '',
     description: '',
     price_per_guest: '',
@@ -15,64 +16,23 @@
     location: '',
     host_id: '',
     image: null as File | null
-  };
-  let creating = false;
-  let errorMsg = '';
-  let showCreateHostModal = false;
-  let hostForm = {
-    name: '',
-    avatar: null as File | null
-  };
-  let creatingHost = false;
-  let hostErrorMsg = '';
-
-  async function getSignedUrl(key: string): Promise<string | null> {
-    if (!key) return null;
-    const res = await fetch(`/api/images?key=${encodeURIComponent(key)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.url;
-  }
-
-  async function fetchListingsAndCategories() {
-    // Fetch categories from API
-    const catRes = await fetch('/api/categories');
-    const apiCategories = await catRes.json();
-    categories = ['All', ...apiCategories];
-
-    // Fetch listings
-    const res = await fetch('/api/listings');
-    const rawListings = await res.json();
-    listings = await Promise.all(
-      rawListings.map(async (listing: any) => {
-        let imageUrl = null;
-        if (listing.image_key) {
-          imageUrl = await getSignedUrl(listing.image_key);
-        }
-        return { ...listing, imageUrl };
-      })
-    );
-  }
-
-  onMount(async () => {
-    await fetchListingsAndCategories();
-    // Fetch hosts
-    const hostRes = await fetch('/api/hosts');
-    hosts = await hostRes.json();
-    loading = false;
   });
+  let creating = $state(false);
+  let errorMsg = $state('');
+  let hostForm = $state({ name: '', avatar: null as File | null });
+  let creatingHost = $state(false);
+  let hostErrorMsg = $state('');
 
-  $: filteredListings = listings.filter(l =>
-    (selectedCategory === 'All' || l.category === selectedCategory) &&
-    (l.title.toLowerCase().includes(search.toLowerCase()) || l.location.toLowerCase().includes(search.toLowerCase()))
-  );
+  // When a category is selected, update the URL (triggers reload)
+  function selectCategory(category: string) {
+    goto(`/?category=${encodeURIComponent(category)}`);
+  }
 
   async function createListing(event: Event) {
     event.preventDefault();
     creating = true;
     errorMsg = '';
     try {
-      // Create listing
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,17 +47,15 @@
       });
       if (!res.ok) throw new Error('Failed to create listing');
       const listing = await res.json();
-      // Upload image if present
       if (form.image) {
         const imgForm = new FormData();
         imgForm.append('file', form.image);
         imgForm.append('listing_id', listing.id);
         await fetch('/api/images', { method: 'POST', body: imgForm });
       }
-      // Refresh listings
-      await fetchListingsAndCategories();
+      // After creation, reload the page to get fresh data
+      goto(window.location.pathname + window.location.search, { replaceState: true });
       showCreateModal = false;
-      // Reset form
       form = { title: '', description: '', price_per_guest: '', category: '', location: '', host_id: '', image: null };
     } catch (e: any) {
       errorMsg = e.message || 'Error creating listing';
@@ -111,17 +69,14 @@
     creatingHost = true;
     hostErrorMsg = '';
     try {
-      // Create host
       const res = await fetch('/api/hosts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: hostForm.name, avatar_url: null })
       });
       if (!res.ok) throw new Error('Failed to create host');
-      // Optionally, upload avatar image (not implemented in backend yet)
-      // Refresh hosts
-      const hostRes = await fetch('/api/hosts');
-      hosts = await hostRes.json();
+      // After creation, reload the page to get fresh data
+      goto(window.location.pathname + window.location.search, { replaceState: true });
       showCreateHostModal = false;
       hostForm = { name: '', avatar: null };
     } catch (e: any) {
@@ -139,7 +94,7 @@
       <span class="text-2xl font-bold tracking-tight">air-bnb</span>
     </div>
     <div class="mt-4 md:mt-0 flex-1 flex justify-center">
-      <input type="text" placeholder="Search destinations" class="w-full max-w-md px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-pink-400" bind:value={search} />
+      <input type="text" placeholder="Search destinations" class="w-full max-w-md px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-pink-400" />
     </div>
     <div class="hidden md:flex items-center gap-4">
       <button class="text-gray-700 font-medium">Stays</button>
@@ -150,24 +105,25 @@
 
   <section class="p-6">
     <div class="flex gap-2 overflow-x-auto pb-4 mb-4">
-      {#each categories as category}
-        <button
-          class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition
-            {selectedCategory === category ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
-          onclick={() => selectedCategory = category}
-        >
-          {category}
-        </button>
-      {/each}
+      {#if categories}
+        {#each categories as category}
+          <button
+            class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === category ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
+            onclick={() => selectCategory(category as string)}
+          >
+            {category}
+          </button>
+        {/each}
+      {/if}
     </div>
     <h2 class="text-xl font-semibold mb-4">Featured Listings</h2>
-    {#if loading}
+    {#if !listings}
       <div>Loading...</div>
-    {:else if filteredListings.length === 0}
+    {:else if listings.length === 0}
       <div>No listings found.</div>
     {:else}
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {#each filteredListings as listing}
+        {#each listings as listing}
           <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col">
             <div class="aspect-w-16 aspect-h-9 bg-gray-200 flex items-center justify-center">
               {#if listing.imageUrl}
@@ -213,15 +169,19 @@
           <input class="w-full border rounded px-3 py-2" type="number" placeholder="Price per guest" bind:value={form.price_per_guest} required min="1" />
           <select class="w-full border rounded px-3 py-2" bind:value={form.category} required>
             <option value="" disabled selected>Select category</option>
-            {#each categories.filter(c => c !== 'All') as category}
-              <option value={category}>{category}</option>
-            {/each}
+            {#if categories}
+              {#each categories.filter((c: string) => c !== 'All') as category}
+                <option value={category}>{category}</option>
+              {/each}
+            {/if}
           </select>
           <select class="w-full border rounded px-3 py-2" bind:value={form.host_id} required>
             <option value="" disabled selected>Select host</option>
-            {#each hosts as host}
-              <option value={host.id}>{host.name}</option>
-            {/each}
+            {#if hosts}
+              {#each hosts as host}
+                <option value={host.id}>{host.name}</option>
+              {/each}
+            {/if}
           </select>
           <input class="w-full" type="file" accept="image/*" oninput={e => {
             const input = e.target as HTMLInputElement | null;
