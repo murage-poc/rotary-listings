@@ -1,7 +1,11 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  // Use SvelteKit's recommended way for page data in runes mode
+  import BeachfrontIcon from '$lib/assets/icon-beachfront.svg?raw';
+  import PoolIcon from '$lib/assets/icon-pool.svg?raw';
+  import CountrysideIcon from '$lib/assets/icon-countryside.svg?raw';
+  import BedIcon from '$lib/assets/icon-bed.svg?raw';
+
   let { data } = $props();
   const { categories, hosts } = data;
 
@@ -11,6 +15,14 @@
   const selectedCategory = $derived(page.url.searchParams.get('category')?? '');
   const searchQuery = $derived(page.url.searchParams.get('search')?? '');
   let loading = $state(true); // Start with loading true
+
+  const categoryIcons: Record<string, string> = {
+    Beachfront: BeachfrontIcon,
+    'Amazing pools': PoolIcon,
+    Countryside: CountrysideIcon,
+    'Bed & breakfasts': BedIcon,
+    // Add more mappings as you add SVGs
+  };
 
   // Function to fetch listings based on category
   async function fetchListings(category: string) {
@@ -116,23 +128,29 @@
 {/snippet}
 
 <main class="min-h-screen bg-gray-50">
-  <!-- Category Navigation Bar will go here -->
+  <!-- Category Navigation Bar with SVG icons -->
   <section class="p-6">
-    <div class="flex gap-2 overflow-x-auto pb-4 mb-4">
+    <div class="flex gap-4 overflow-x-auto pb-4 mb-4">
       <!-- Static "All" button -->
       <button
-        class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === '' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
+        class="flex flex-col items-center px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === '' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
         onclick={() => selectCategory('')}
       >
+        <span class="w-7 h-7 mb-1 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 text-gray-400"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+        </span>
         All
       </button>
-      <!-- Dynamic category buttons -->
+      <!-- Dynamic category buttons with icons -->
       {#if categories}
         {#each categories as category}
           <button
-            class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === category ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
+            class="flex flex-col items-center px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition {selectedCategory === category ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
             onclick={() => selectCategory(category as string)}
           >
+            <span class="w-7 h-7 mb-1 flex items-center justify-center">
+              {@html categoryIcons[category] || ''}
+            </span>
             {category}
           </button>
         {/each}
