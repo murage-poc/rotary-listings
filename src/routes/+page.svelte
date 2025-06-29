@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { pushState,goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import type { PageProps } from './$types';
 
@@ -10,7 +10,7 @@
 
   // Use $state for local UI state
   let listings = $state<any[]>([]);
-  let selectedCategory = $derived(page.url.searchParams.get('category')?? '');
+  const selectedCategory = $derived(page.url.searchParams.get('category')?? '');
   let loading = $state(false);
   let showCreateModal = $state(false);
   let showCreateHostModal = $state(false);
@@ -124,8 +124,7 @@
 <main class="min-h-screen bg-gray-50">
   <header class="py-6 px-4 flex flex-col md:flex-row md:items-center md:justify-between bg-white shadow">
     <div class="flex items-center gap-2">
-      <img src="/favicon.png" alt="Logo" class="h-8 w-8" />
-      <span class="text-2xl font-bold tracking-tight">air-bnb</span>
+      <img src="/logo.svg" alt="air-bnb Logo" class="h-8" />
     </div>
     <div class="mt-4 md:mt-0 flex-1 flex justify-center">
       <input type="text" placeholder="Search destinations" class="w-full max-w-md px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-pink-400" />
