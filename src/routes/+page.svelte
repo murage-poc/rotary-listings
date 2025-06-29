@@ -47,10 +47,7 @@
     }
   }
 
-  // Fetch listings on mount
-  fetchListings(selectedCategory);
-
-  // Refetch when category changes
+  // Fetch listings when selectedCategory changes (including on mount)
   $effect(() => {
     if (selectedCategory !== undefined) {
       fetchListings(selectedCategory);
