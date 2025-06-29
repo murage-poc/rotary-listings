@@ -9,7 +9,12 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"db:migrate": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') up",
+		"db:cm": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') new",
+		"db:rollback": "dbmate $([[ -f ./.env ]] && echo '--env-file ./.env') rollback",
+		"db:generate:types": "[ -f ./.env ] && . ./.env; kysely-codegen --out-file src/lib/db-schema.d.ts --default-schema=${DB_SCHEMA} --dialect=${DB_CONNECTION} --exclude-pattern='*.(migrations|seed_migrations)'",
+		"generate": "pnpm run db:generate:types"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.1",
@@ -17,6 +22,8 @@
 		"@sveltejs/vite-plugin-svelte": "^5.1.0",
 		"@tailwindcss/vite": "^4.1.11",
 		"@types/node": "^24.0.7",
+		"dbmate": "^2.27.0",
+		"kysely-codegen": "^0.18.5",
 		"svelte": "^5.34.9",
 		"svelte-check": "^4.2.2",
 		"tailwindcss": "^4.1.11",
