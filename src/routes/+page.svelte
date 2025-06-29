@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { pushState } from '$app/navigation';
+  import { pushState,goto } from '$app/navigation';
   import { page } from '$app/state';
   import type { PageProps } from './$types';
 
@@ -10,7 +10,7 @@
 
   // Use $state for local UI state
   let listings = $state<any[]>([]);
-  let selectedCategory = $state(page.url.searchParams.get('category') || '');
+  let selectedCategory = $derived(page.url.searchParams.get('category')?? '');
   let loading = $state(false);
   let showCreateModal = $state(false);
   let showCreateHostModal = $state(false);
@@ -59,15 +59,12 @@
 
   // When a category is selected, update state and URL
   function selectCategory(category: string) {
-    selectedCategory = category;
-    
-    // Update URL using pushState
-    if (category === '') {
-      page.url.searchParams.delete('category');
-    } else {
-      page.url.searchParams.set('category', category);
-    }
-    pushState(page.url, page.state);
+
+    // Update URL
+    const url = new URL(page.url);
+    url.searchParams.set('category', category);
+    goto(url.toString(), { replaceState: true });
+
   }
 
   async function createListing(event: Event) {
