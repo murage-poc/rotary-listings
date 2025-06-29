@@ -13,7 +13,7 @@
   let allListings = $state<any[]>([]); // Store all listings for search
   const selectedCategory = $derived(page.url.searchParams.get('category')?? '');
   const searchQuery = $derived(page.url.searchParams.get('search')?? '');
-  let loading = $state(false);
+  let loading = $state(true); // Start with loading true
 
   // Function to fetch listings based on category
   async function fetchListings(category: string) {
@@ -84,6 +84,40 @@
   }
 </script>
 
+<svelte:head>
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml">
+</svelte:head>
+
+<!-- Skeleton snippet for reuse -->
+{#snippet skeleton()}
+  <div class="bg-white rounded-xl shadow overflow-hidden flex flex-col animate-pulse min-h-[336px]">
+
+    <div class="bg-gray-200 flex-1 w-full"></div>
+
+    <div class="p-4 flex flex-col">
+      <div class="h-6 bg-gray-200 rounded mb-2"></div>
+      <div class="h-10 bg-gray-200 rounded mb-2"></div>
+      <div class="mt-2 flex items-center justify-between">
+        <div class="h-4 bg-gray-200 rounded w-24"></div>
+        <div class="h-3 bg-gray-200 rounded w-16"></div>
+      </div>
+    </div>
+  </div>
+{/snippet}
+
+<!-- Image placeholder snippet for reuse -->
+{#snippet imagePlaceholder()}
+  <div class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+    <div class="text-center">
+      <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      <div class="text-xs text-gray-500">Loading...</div>
+    </div>
+  </div>
+{/snippet}
+
 <main class="min-h-screen bg-gray-50">
   <header class="py-6 px-4 flex flex-col md:flex-row md:items-center md:justify-between bg-white shadow">
     <div class="flex items-center gap-2">
@@ -142,25 +176,50 @@
     {/if}
     
     <h2 class="text-xl font-semibold mb-4">Featured Listings</h2>
-    {#if loading}
-      <div class="text-center py-8">
-        <div class="text-gray-500">Loading...</div>
-      </div>
-    {:else if listings.length === 0}
-      <div class="text-center py-8">
-        <div class="text-gray-500">
-          {searchQuery ? 'No listings found matching your search.' : 'No listings found.'}
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {#if loading}
+        {#each Array.from({length: 8}) as _, i}
+          {@render skeleton()}
+        {/each}
+      {:else if listings.length === 0}
+        <div class="col-span-full text-center py-8">
+          <div class="text-gray-500">
+            {searchQuery ? 'No listings found matching your search.' : 'No listings found.'}
+          </div>
         </div>
-      </div>
-    {:else}
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {:else}
         {#each listings as listing}
           <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col">
-            <div class="aspect-w-16 aspect-h-9 bg-gray-200 flex items-center justify-center">
+            <div class="aspect-w-16 aspect-h-9 bg-gray-200 flex items-center justify-center relative">
               {#if listing.imageUrl}
-                <img src={listing.imageUrl} alt={listing.title} class="object-cover w-full h-full" />
+                {@render imagePlaceholder()}
+                
+                <img 
+                  src={listing.imageUrl} 
+                  alt={listing.title} 
+                  class="object-cover w-full h-full transition-opacity duration-300 relative z-10"
+                  loading="lazy"
+                  width="400"
+                  height="225"
+                  decoding="async"
+                  onload={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.opacity = '1';
+                    // Hide the placeholder when image loads
+                    const placeholder = img.previousElementSibling as HTMLElement;
+                    if (placeholder) {
+                      placeholder.style.display = 'none';
+                    }
+                  }}
+                  style="opacity: 0;"
+                />
               {:else}
-                <span class="text-gray-400">Image</span>
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
               {/if}
             </div>
             <div class="p-4 flex-1 flex flex-col">
@@ -173,7 +232,7 @@
             </div>
           </div>
         {/each}
-      </div>
-    {/if}
+      {/if}
+    </div>
   </section>
 </main>
