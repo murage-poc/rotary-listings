@@ -1,12 +1,11 @@
--- Hosts table
-CREATE TABLE hosts (
+-- migrate:up
+CREATE TABLE IF NOT EXISTS hosts (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     avatar_url TEXT
 );
 
--- Listings table
-CREATE TABLE listings (
+CREATE TABLE IF NOT EXISTS listings (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -17,10 +16,14 @@ CREATE TABLE listings (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Images table
-CREATE TABLE images (
+CREATE TABLE IF NOT EXISTS images (
     id SERIAL PRIMARY KEY,
     listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     url TEXT NOT NULL,
     alt TEXT
-); 
+);
+
+-- migrate:down
+DROP TABLE IF EXISTS images;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS hosts; 
