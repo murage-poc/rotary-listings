@@ -36,19 +36,6 @@ CREATE TABLE images (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default categories
-INSERT INTO categories (name) VALUES 
-    ('Luxe'),
-    ('Farms'),
-    ('Beachfront'),
-    ('Cabins'),
-    ('Tiny homes'),
-    ('Treehouses'),
-    ('Camping'),
-    ('Mansions'),
-    ('Islands'),
-    ('Castles');
-
 -- migrate:down
 
 DROP TABLE IF EXISTS images;

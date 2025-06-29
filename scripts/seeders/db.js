@@ -11,33 +11,48 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const seedPath = path.resolve(__dirname, 'data.json');
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
-const { hosts, listings, images } = seed;
+const { categories, hosts, listings, images } = seed;
 
 async function main() {
   const client = new Client({ connectionString: DATABASE_URL });
   await client.connect();
   try {
     await client.query('BEGIN');
+    
+    // Clear existing data
     await client.query('DELETE FROM images');
     await client.query('DELETE FROM listings');
     await client.query('DELETE FROM hosts');
+    await client.query('DELETE FROM categories');
+    
+    // Insert categories first
+    for (const category of categories) {
+      await client.query('INSERT INTO categories (id, name) VALUES ($1, $2)', [category.id, category.name]);
+    }
+    
+    // Insert hosts
     for (const host of hosts) {
       await client.query('INSERT INTO hosts (id, name, avatar_url) VALUES ($1, $2, $3)', [host.id, host.name, host.avatar_url]);
     }
+    
+    // Insert listings with category_id foreign key
     for (const listing of listings) {
       await client.query(
-        'INSERT INTO listings (id, title, description, price_per_guest, host_id, category, location) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [listing.id, listing.title, listing.description, listing.price_per_guest, listing.host_id, listing.category, listing.location]
+        'INSERT INTO listings (id, title, description, price_per_guest, host_id, category_id, location) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [listing.id, listing.title, listing.description, listing.price_per_guest, listing.host_id, listing.category_id, listing.location]
       );
     }
+    
+    // Insert images
     for (const image of images) {
       await client.query(
         'INSERT INTO images (listing_id, url, alt) VALUES ($1, $2, $3)',
         [image.listing_id, image.url, image.alt]
       );
     }
+    
     await client.query('COMMIT');
-    console.log('Seeded hosts, listings, and images from seed.json!');
+    console.log('Seeded categories, hosts, listings, and images from seed.json!');
   } catch (e) {
     await client.query('ROLLBACK');
     throw e;
