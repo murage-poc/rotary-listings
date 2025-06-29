@@ -10,7 +10,9 @@
 
   // Use $state for local UI state
   let listings = $state<any[]>([]);
+  let allListings = $state<any[]>([]); // Store all listings for search
   const selectedCategory = $derived(page.url.searchParams.get('category')?? '');
+  const searchQuery = $derived(page.url.searchParams.get('search')?? '');
   let loading = $state(false);
 
   // Function to fetch listings based on category
@@ -22,13 +24,31 @@
         apiUrl += `?category=${encodeURIComponent(category)}`;
       }
       const res = await fetch(apiUrl);
-      listings = await res.json();
+      const fetchedListings = await res.json();
+      allListings = fetchedListings;
+      listings = fetchedListings;
     } catch (error) {
       console.error('Error fetching listings:', error);
       listings = [];
+      allListings = [];
     } finally {
       loading = false;
     }
+  }
+
+  // Function to filter listings by search query
+  function filterListings() {
+    if (!searchQuery) {
+      listings = allListings;
+      return;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    listings = allListings.filter(listing => 
+      listing.title.toLowerCase().includes(query) ||
+      listing.description.toLowerCase().includes(query) ||
+      listing.location.toLowerCase().includes(query)
+    );
   }
 
   // Fetch listings when selectedCategory changes (including on mount)
@@ -38,11 +58,28 @@
     }
   });
 
+  // Filter listings when search query changes
+  $effect(() => {
+    filterListings();
+  });
+
   // When a category is selected, update URL
   function selectCategory(category: string) {
     // Update URL
     const url = new URL(page.url);
     url.searchParams.set('category', category);
+    goto(url.toString(), { replaceState: false });
+  }
+
+  // Handle search input
+  function handleSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const url = new URL(page.url);
+    if (input.value) {
+      url.searchParams.set('search', input.value);
+    } else {
+      url.searchParams.delete('search');
+    }
     goto(url.toString(), { replaceState: false });
   }
 </script>
@@ -53,7 +90,13 @@
       <img src="/logo.svg" alt="air-bnb Logo" class="h-8" />
     </div>
     <div class="mt-4 md:mt-0 flex-1 flex justify-center">
-      <input type="text" placeholder="Search destinations" class="w-full max-w-md px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-pink-400" />
+      <input 
+        type="text" 
+        placeholder="Search destinations" 
+        class="w-full max-w-md px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-pink-400"
+        value={searchQuery}
+        oninput={handleSearch}
+      />
     </div>
     <div class="hidden md:flex items-center gap-4">
       <button class="text-gray-700 font-medium">Stays</button>
@@ -90,11 +133,25 @@
         {/each}
       {/if}
     </div>
+    
+    <!-- Search results info -->
+    {#if searchQuery}
+      <div class="mb-4 text-sm text-gray-600">
+        Search results for "{searchQuery}": {listings.length} listing{listings.length !== 1 ? 's' : ''}
+      </div>
+    {/if}
+    
     <h2 class="text-xl font-semibold mb-4">Featured Listings</h2>
-    {#if !listings}
-      <div>Loading...</div>
+    {#if loading}
+      <div class="text-center py-8">
+        <div class="text-gray-500">Loading...</div>
+      </div>
     {:else if listings.length === 0}
-      <div>No listings found.</div>
+      <div class="text-center py-8">
+        <div class="text-gray-500">
+          {searchQuery ? 'No listings found matching your search.' : 'No listings found.'}
+        </div>
+      </div>
     {:else}
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {#each listings as listing}
