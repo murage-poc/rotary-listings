@@ -5,8 +5,9 @@ export const GET: RequestHandler = async ({ url }) => {
   const listings = await db
     .selectFrom('listings')
     .leftJoin('images', 'images.listing_id', 'listings.id')
-    .select([ 'listings.*', 'images.url as image_key' ])
-    .groupBy('listings.id', 'images.url')
+    .selectAll('listings')
+    .select(db.fn.min('images.url').as('image_key'))
+    .groupBy('listings.id')
     .execute();
   return json(listings);
 };
