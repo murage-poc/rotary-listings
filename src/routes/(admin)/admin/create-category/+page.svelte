@@ -7,10 +7,12 @@
   let isSubmitting = false;
   let errorMessage = '';
   let successMessage = '';
+  let isDragOver = false;
+  let showPasteArea = false;
 
   // Basic SVG validation
   function validateSvg(svg: string): boolean {
-    if (!svg.trim()) return true; // Empty is OK (optional)
+    if (!svg.trim()) return false; // Icon is required
     
     const svgRegex = /^<svg[^>]*>.*<\/svg>$/is;
     if (!svgRegex.test(svg)) {
@@ -39,11 +41,93 @@
 
   function handleSvgChange(event: Event) {
     const target = event.target as HTMLTextAreaElement;
-    iconSvg = target.value;
+    iconSvg = target.value?.trim();
     errorMessage = '';
     
     if (iconSvg && !validateSvg(iconSvg)) {
       return;
+    }
+  }
+
+  async function handleFileUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    
+    if (!file.name.toLowerCase().endsWith('.svg')) {
+      errorMessage = 'Please select an SVG file.';
+      return;
+    }
+    
+    try {
+      const text = await file.text();
+      iconSvg = text?.trim();
+      errorMessage = '';
+      
+      if (!validateSvg(iconSvg)) {
+        return;
+      }
+    } catch (error) {
+      errorMessage = 'Error reading file. Please try again.';
+    }
+  }
+
+  function handleDragOver(event: Event) {
+    event.preventDefault();
+    isDragOver = true;
+  }
+
+  function handleDragLeave(event: Event) {
+    event.preventDefault();
+    isDragOver = false;
+  }
+
+  function handleDrop(event: Event) {
+    event.preventDefault();
+    isDragOver = false;
+    
+    const dragEvent = event as DragEvent;
+    const files = dragEvent.dataTransfer?.files;
+    handleFileUpload(files || null);
+  }
+
+  async function handlePasteButton() {
+    showPasteArea = true;
+    
+    // Try to read clipboard automatically
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText && clipboardText.trim()) {
+        iconSvg = clipboardText.trim();
+        errorMessage = '';
+        
+        if (!validateSvg(iconSvg)) {
+          return;
+        }
+      }
+    } catch (error) {
+      // Clipboard API might not be available or user denied permission
+      // That's okay, user can still paste manually
+    }
+  }
+
+  function handlePaste(event: ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text');
+    if (pastedText) {
+      iconSvg = pastedText.trim();
+      errorMessage = '';
+      
+      if (!validateSvg(iconSvg)) {
+        return;
+      }
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    // Handle Ctrl+V on the dropzone
+    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+      event.preventDefault();
+      handlePasteButton();
     }
   }
 
@@ -55,7 +139,12 @@
       return;
     }
 
-    if (iconSvg && !validateSvg(iconSvg)) {
+    if (!iconSvg.trim()) {
+      errorMessage = 'Icon is required.';
+      return;
+    }
+
+    if (!validateSvg(iconSvg)) {
       return;
     }
 
@@ -71,7 +160,7 @@
         },
         body: JSON.stringify({
           name: categoryName.trim(),
-          icon_svg: iconSvg.trim() || null
+          icon_svg: iconSvg.trim()
         })
       });
 
@@ -104,7 +193,7 @@
         ← Back to Admin
       </button>
       <h1 class="text-3xl font-bold text-gray-900">Create New Category</h1>
-      <p class="text-gray-600 mt-2">Add a new category with an optional custom icon</p>
+      <p class="text-gray-600 mt-2">Add a new category with an icon</p>
     </header>
 
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -124,37 +213,91 @@
           />
         </div>
 
-        <!-- SVG Icon -->
+        <!-- Icon Upload Area -->
         <div>
-          <label for="iconSvg" class="block text-sm font-medium text-gray-700 mb-2">
-            SVG Icon (Optional)
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Icon *
           </label>
-          <textarea
-            id="iconSvg"
-            bind:value={iconSvg}
-            oninput={handleSvgChange}
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
-            rows="6"
-            placeholder="<svg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'>...</svg>"
-          />
-          <p class="text-xs text-gray-500 mt-1">
-            Paste a valid SVG code. Only safe SVG elements are allowed.
-          </p>
-        </div>
-
-        <!-- Icon Preview -->
-        {#if iconSvg && validateSvg(iconSvg)}
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Icon Preview
-            </label>
-            <div class="border border-gray-200 rounded-md p-4 bg-gray-50 flex items-center justify-center">
-              <div class="w-8 h-8 text-gray-600">
-                {@html iconSvg}
+          
+          {#if !iconSvg}
+            <!-- Upload Options -->
+            <div class="space-y-4">
+              <!-- Drag & Drop Area -->
+              <div
+                class="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-200 hover:border-green-400 hover:bg-green-50 {isDragOver ? 'border-green-500 bg-green-50' : ''}"
+                ondragover={handleDragOver}
+                ondragleave={handleDragLeave}
+                ondrop={handleDrop}
+                onkeydown={handleKeyDown}
+                tabindex="0"
+              >
+                <div class="space-y-4">
+                  <div class="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-700">Drop your SVG file here</p>
+                    <p class="text-xs text-gray-500 mt-1">or press Ctrl+V to paste SVG code</p>
+                  </div>
+                  <div class="flex gap-3 justify-center">
+                    <label class="cursor-pointer bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition text-sm font-medium">
+                      Choose File
+                      <input
+                        type="file"
+                        accept=".svg"
+                        class="hidden"
+                        onchange={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          handleFileUpload(target.files);
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onclick={handlePasteButton}
+                      class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition text-sm font-medium"
+                    >
+                      Paste SVG
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        {/if}
+          {:else}
+            <!-- Icon Preview & Edit -->
+            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-medium text-gray-700">Icon Preview</span>
+                <button
+                  type="button"
+                  onclick={() => { iconSvg = ''; showPasteArea = false; }}
+                  class="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+              <div class="flex items-center justify-center p-4 bg-white rounded border">
+                <div class="w-12 h-12 text-gray-600">
+                  {@html iconSvg}
+                </div>
+              </div>
+              {#if showPasteArea}
+                <div class="mt-4">
+                  <textarea
+                    bind:value={iconSvg}
+                    oninput={handleSvgChange}
+                    onpaste={handlePaste}
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-xs"
+                    rows="4"
+                    placeholder="Paste your SVG code here..."
+                  />
+                </div>
+              {/if}
+            </div>
+          {/if}
+        </div>
 
         <!-- Error Message -->
         {#if errorMessage}
@@ -184,7 +327,7 @@
         <div class="flex gap-4">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !iconSvg.trim()}
             class="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Creating...' : 'Create Category'}
@@ -202,7 +345,7 @@
 
     <!-- Help Section -->
     <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-      <h3 class="text-lg font-semibold text-blue-900 mb-3">SVG Icon Guidelines</h3>
+      <h3 class="text-lg font-semibold text-blue-900 mb-3">SVG Guidelines</h3>
       <ul class="text-sm text-blue-800 space-y-2">
         <li>• Use simple, clean SVG designs that work well at small sizes (32x32px)</li>
         <li>• Include viewBox, width, height, and xmlns attributes</li>

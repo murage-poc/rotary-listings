@@ -62,7 +62,7 @@
           </div>
           <div>
             <h2 class="text-xl font-semibold text-gray-900">Create Category</h2>
-            <p class="text-gray-600">Add a new category with icon</p>
+            <p class="text-gray-600">Add a new category</p>
           </div>
         </div>
         <button 

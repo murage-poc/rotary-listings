@@ -16,42 +16,6 @@
   });
   let creating = $state(false);
   let errorMsg = $state('');
-  
-  // Category creation state
-  let showCategoryModal = $state(false);
-  let newCategoryName = $state('');
-  let creatingCategory = $state(false);
-  let categoryErrorMsg = $state('');
-  let localCategories = $state([...categories]);
-
-  async function createCategory(event: Event) {
-    event.preventDefault();
-    if (!newCategoryName.trim()) return;
-    
-    creatingCategory = true;
-    categoryErrorMsg = '';
-    try {
-      const res = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newCategoryName.trim() })
-      });
-      if (!res.ok) throw new Error('Failed to create category');
-      const newCategory = await res.json();
-      
-      // Add to local categories and select it
-      localCategories = [...localCategories, newCategory.name];
-      form.category = newCategory.name;
-      
-      // Close modal and reset
-      showCategoryModal = false;
-      newCategoryName = '';
-    } catch (e: any) {
-      categoryErrorMsg = e.message || 'Error creating category';
-    } finally {
-      creatingCategory = false;
-    }
-  }
 
   async function createListing(event: Event) {
     event.preventDefault();
@@ -162,28 +126,19 @@
 
         <div>
           <label for="listing-category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <div class="flex gap-2">
-            <select 
-              id="listing-category"
-              class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
-              bind:value={form.category} 
-              required
-            >
-              <option value="" disabled selected>Select category</option>
-              {#if localCategories}
-                {#each localCategories as category}
-                  <option value={category}>{category}</option>
-                {/each}
-              {/if}
-            </select>
-            <button 
-              type="button"
-              onclick={() => showCategoryModal = true}
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border border-gray-300"
-            >
-              + New
-            </button>
-          </div>
+          <select 
+            id="listing-category"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
+            bind:value={form.category} 
+            required
+          >
+            <option value="" disabled selected>Select category</option>
+            {#if categories}
+              {#each categories as category}
+                <option value={category.name}>{category.name}</option>
+              {/each}
+            {/if}
+          </select>
         </div>
 
         <div>
@@ -236,57 +191,4 @@
       </form>
     </div>
   </div>
-
-  <!-- Create Category Modal -->
-  {#if showCategoryModal}
-    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900">Create New Category</h3>
-          <button 
-            onclick={() => showCategoryModal = false}
-            class="text-gray-400 hover:text-gray-600"
-          >
-            ×
-          </button>
-        </div>
-        
-        {#if categoryErrorMsg}
-          <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded mb-4">
-            {categoryErrorMsg}
-          </div>
-        {/if}
-
-        <form onsubmit={createCategory} class="space-y-4">
-          <div>
-            <label for="category-name" class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
-            <input 
-              id="category-name"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
-              placeholder="Enter category name" 
-              bind:value={newCategoryName} 
-              required 
-            />
-          </div>
-          
-          <div class="flex gap-3">
-            <button 
-              type="submit" 
-              disabled={creatingCategory}
-              class="flex-1 bg-pink-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-pink-600 transition disabled:opacity-50"
-            >
-              {creatingCategory ? 'Creating...' : 'Create Category'}
-            </button>
-            <button 
-              type="button"
-              onclick={() => showCategoryModal = false}
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  {/if}
 </main> 
