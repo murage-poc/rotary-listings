@@ -214,7 +214,7 @@
 
         <!-- Icon Upload Area -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="iconUpload" class="block text-sm font-medium text-gray-700 mb-2">
             Icon *
           </label>
           
@@ -228,7 +228,10 @@
                 ondragleave={handleDragLeave}
                 ondrop={handleDrop}
                 onkeydown={handleKeyDown}
+                role="button"
                 tabindex="0"
+                id="iconUpload"
+                aria-label="Upload SVG icon by dragging and dropping a file or pressing Ctrl+V to paste"
               >
                 <div class="space-y-4">
                   <div class="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
@@ -291,7 +294,7 @@
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-xs"
                     rows="4"
                     placeholder="Paste your SVG code here..."
-                  />
+                  ></textarea>
                 </div>
               {/if}
             </div>

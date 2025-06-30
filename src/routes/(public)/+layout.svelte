@@ -15,17 +15,23 @@
       </div>
       <!-- Navigation Links -->
       <nav class="hidden md:flex gap-8 text-gray-700 font-light text-[16px]">
-        <a href="#" class="hover:text-black">Stays</a>
-        <a href="#" class="hover:text-black">Experiences</a>
-        <a href="#" class="hover:text-black">Online Experiences</a>
+        <button class="hover:text-black">Stays</button>
+        <button class="hover:text-black">Experiences</button>
+        <button class="hover:text-black">Online Experiences</button>
       </nav>
       <!-- User Controls -->
       <div class="flex items-center gap-4 ml-6">
-        <a href="#" class="text-gray-700 hover:text-black font-light hidden md:inline text-[16px]">Airbnb your home</a>
-        <button class="p-2 rounded-full hover:bg-gray-100">
-          {@html globeIcon}
+        <button class="text-gray-700 hover:text-black font-light hidden md:inline text-[16px]">Airbnb your home</button>
+        <button class="p-2 rounded-full hover:bg-gray-100" aria-label="Favorites">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+          </svg>
         </button>
-        <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+        <button class="p-2 rounded-full hover:bg-gray-100" aria-label="User profile">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </button>
       </div>
     </div>
     <!-- Search Bar -->
@@ -48,7 +54,7 @@
             <span class="text-[15px] font-semibold text-gray-700 leading-tight">Who</span>
             <span class="text-xs text-gray-400 leading-tight">Add guests</span>
           </button>
-          <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 bg-rose-500 hover:bg-rose-600 text-white rounded-full shadow-lg w-8 h-8 flex items-center justify-center focus:outline-none z-20">
+          <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 bg-rose-500 hover:bg-rose-600 text-white rounded-full shadow-lg w-8 h-8 flex items-center justify-center focus:outline-none z-20" aria-label="Search">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
             </svg>

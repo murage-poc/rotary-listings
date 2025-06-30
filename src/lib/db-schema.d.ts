@@ -15,6 +15,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface Categories {
   created_at: Generated<Timestamp | null>;
+  icon_svg: string | null;
   id: Generated<number>;
   name: string;
 }
