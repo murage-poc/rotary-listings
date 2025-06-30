@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { enhance } from '$app/forms';
 
   let categoryName = '';
   let iconSvg = '';

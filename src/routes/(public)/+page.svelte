@@ -1,28 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  // Placeholder SVGs for all categories (replace with real icons as needed)
+  
+  // Default icons for fallback
   const DefaultIcon = `<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' class='w-5 h-5'><circle cx='12' cy='12' r='9'/></svg>`;
   const AllIcon = `<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' class='w-5 h-5'><circle cx='12' cy='12' r='10' stroke='currentColor' stroke-width='2' fill='white'/><circle cx='12' cy='12' r='4' fill='currentColor'/></svg>`;
-  // Map category names to icons (add/replace as needed)
-  const categoryIcons: Record<string, string> = {
-    'All': AllIcon,
-    'Icons': DefaultIcon,
-    'Beachfront': DefaultIcon,
-    'Countryside': DefaultIcon,
-    'Amazing pools': DefaultIcon,
-    'Bed & breakfasts': DefaultIcon,
-    'Luxe': DefaultIcon,
-    'Amazing views': DefaultIcon,
-    'Cabins': DefaultIcon,
-    'National parks': DefaultIcon,
-    'Farms': DefaultIcon,
-    'Castles': DefaultIcon,
-    'Lake': DefaultIcon,
-    'Mansions': DefaultIcon,
-    'Tiny homes': DefaultIcon,
-    // Add more as needed
-  };
 
   let { data } = $props();
   const { categories, hosts } = data;
