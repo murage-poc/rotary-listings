@@ -149,23 +149,23 @@
         style="box-shadow: none; border-radius: 0; border: none;"
       >
         <span class="w-6 h-6 mb-1 flex items-center justify-center">
-          {@html categoryIcons['All']}
+          {@html AllIcon}
         </span>
         <span class="text-xs font-normal">All</span>
       </button>
-      <!-- Dynamic category buttons with icons -->
+      <!-- Dynamic category buttons with icons from database -->
       {#if categories}
         {#each categories as category}
           <button
             class="flex flex-col items-center justify-center min-w-[72px] h-14 px-2 bg-transparent transition-all duration-150
-              {selectedCategory === category ? 'border-b-2 border-black text-black' : 'text-gray-400 hover:text-black'}"
-            onclick={() => selectCategory(category as string)}
+              {selectedCategory === category.name ? 'border-b-2 border-black text-black' : 'text-gray-400 hover:text-black'}"
+            onclick={() => selectCategory(category.name)}
             style="box-shadow: none; border-radius: 0; border: none;"
           >
             <span class="w-6 h-6 mb-1 flex items-center justify-center">
-              {@html categoryIcons[category] || DefaultIcon}
+              {@html category.icon_svg || DefaultIcon}
             </span>
-            <span class="text-xs font-normal">{category}</span>
+            <span class="text-xs font-normal">{category.name}</span>
           </button>
         {/each}
       {/if}
