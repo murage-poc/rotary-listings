@@ -1,15 +1,15 @@
 {
   "categories": [
-    { "id": 1, "name": "Luxe" },
-    { "id": 2, "name": "Farms" },
-    { "id": 3, "name": "Beachfront" },
-    { "id": 4, "name": "Cabins" },
-    { "id": 5, "name": "Tiny homes" },
-    { "id": 6, "name": "Treehouses" },
-    { "id": 7, "name": "Camping" },
-    { "id": 8, "name": "Mansions" },
-    { "id": 9, "name": "Islands" },
-    { "id": 10, "name": "Castles" }
+    { "id": 1, "name": "Luxe", "icon_path": "luxe.svg" },
+    { "id": 2, "name": "Farms", "icon_path": "farms.svg" },
+    { "id": 3, "name": "Beachfront", "icon_path": "beachfront.svg" },
+    { "id": 4, "name": "Cabins", "icon_path": "cabins.svg" },
+    { "id": 5, "name": "Tiny homes", "icon_path": "tiny_homes.svg" },
+    { "id": 6, "name": "Treehouses", "icon_path": "treehouses.svg" },
+    { "id": 7, "name": "Camping", "icon_path": "camping.svg" },
+    { "id": 8, "name": "Mansions", "icon_path": "mansions.svg" },
+    { "id": 9, "name": "Islands", "icon_path": "islands.svg" },
+    { "id": 10, "name": "Castles", "icon_path": "castles.svg" }
   ],
   "hosts": [
     { "id": 1, "name": "Alice Johnson", "avatar_url": "https://i.pravatar.cc/150?img=1" },

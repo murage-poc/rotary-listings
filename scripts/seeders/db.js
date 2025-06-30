@@ -13,6 +13,8 @@ const seedPath = path.resolve(__dirname, 'data.json');
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
 const { categories, hosts, listings, images } = seed;
 
+const iconsDir = path.resolve(__dirname, 'icons');
+
 async function main() {
   const client = new Client({ connectionString: DATABASE_URL });
   await client.connect();
@@ -27,7 +29,13 @@ async function main() {
     
     // Insert categories first
     for (const category of categories) {
-      await client.query('INSERT INTO categories (id, name) VALUES ($1, $2)', [category.id, category.name]);
+      if (category.icon_path) {
+        const iconPath = path.join(iconsDir, category.icon_path);
+        category.icon_svg = fs.readFileSync(iconPath, 'utf-8');
+      } else {
+        category.icon_svg = '';
+      }
+      await client.query('INSERT INTO categories (id, name, icon_svg) VALUES ($1, $2, $3)', [category.id, category.name, category.icon_svg]);
     }
     
     // Insert hosts

@@ -1,10 +1,28 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import BeachfrontIcon from '$lib/assets/icon-beachfront.svg?raw';
-  import PoolIcon from '$lib/assets/icon-pool.svg?raw';
-  import CountrysideIcon from '$lib/assets/icon-countryside.svg?raw';
-  import BedIcon from '$lib/assets/icon-bed.svg?raw';
+  // Placeholder SVGs for all categories (replace with real icons as needed)
+  const DefaultIcon = `<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' class='w-5 h-5'><circle cx='12' cy='12' r='9'/></svg>`;
+  const AllIcon = `<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' class='w-5 h-5'><circle cx='12' cy='12' r='10' stroke='currentColor' stroke-width='2' fill='white'/><circle cx='12' cy='12' r='4' fill='currentColor'/></svg>`;
+  // Map category names to icons (add/replace as needed)
+  const categoryIcons: Record<string, string> = {
+    'All': AllIcon,
+    'Icons': DefaultIcon,
+    'Beachfront': DefaultIcon,
+    'Countryside': DefaultIcon,
+    'Amazing pools': DefaultIcon,
+    'Bed & breakfasts': DefaultIcon,
+    'Luxe': DefaultIcon,
+    'Amazing views': DefaultIcon,
+    'Cabins': DefaultIcon,
+    'National parks': DefaultIcon,
+    'Farms': DefaultIcon,
+    'Castles': DefaultIcon,
+    'Lake': DefaultIcon,
+    'Mansions': DefaultIcon,
+    'Tiny homes': DefaultIcon,
+    // Add more as needed
+  };
 
   let { data } = $props();
   const { categories, hosts } = data;
@@ -15,14 +33,6 @@
   const selectedCategory = $derived(page.url.searchParams.get('category')?? '');
   const searchQuery = $derived(page.url.searchParams.get('search')?? '');
   let loading = $state(true); // Start with loading true
-
-  const categoryIcons: Record<string, string> = {
-    Beachfront: BeachfrontIcon,
-    'Amazing pools': PoolIcon,
-    Countryside: CountrysideIcon,
-    'Bed & breakfasts': BedIcon,
-    // Add more mappings as you add SVGs
-  };
 
   // Function to fetch listings based on category
   async function fetchListings(category: string) {
@@ -133,30 +143,29 @@
     <div class="flex gap-4 overflow-x-auto px-6 py-4">
       <!-- All Button -->
       <button
-        class="flex flex-col items-center justify-center w-16 h-16 rounded-full border-2 transition-all duration-150
-          {selectedCategory === '' ? 'border-pink-500 text-pink-500 bg-white ring-2 ring-pink-100' : 'border-gray-200 text-gray-700 bg-white hover:border-gray-400 hover:shadow-md'}"
+        class="flex flex-col items-center justify-center w-14 h-14 bg-transparent transition-all duration-150
+          {selectedCategory === '' ? 'border-b-2 border-black text-black' : 'text-gray-400 hover:text-black'}"
         onclick={() => selectCategory('')}
+        style="box-shadow: none; border-radius: 0; border: none;"
       >
-        <span class="w-7 h-7 mb-1 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="white"/>
-            <circle cx="12" cy="12" r="4" fill={selectedCategory === '' ? 'currentColor' : '#e5e7eb'} />
-          </svg>
+        <span class="w-6 h-6 mb-1 flex items-center justify-center">
+          {@html categoryIcons['All']}
         </span>
-        <span class="text-xs font-semibold">All</span>
+        <span class="text-xs font-normal">All</span>
       </button>
       <!-- Dynamic category buttons with icons -->
       {#if categories}
         {#each categories as category}
           <button
-            class="flex flex-col items-center justify-center w-24 h-16 rounded-full border-2 transition-all duration-150
-              {selectedCategory === category ? 'border-pink-500 text-pink-500 bg-white ring-2 ring-pink-100 font-semibold' : 'border-gray-200 text-gray-700 bg-white hover:border-gray-400 hover:shadow-md'}"
+            class="flex flex-col items-center justify-center min-w-[72px] h-14 px-2 bg-transparent transition-all duration-150
+              {selectedCategory === category ? 'border-b-2 border-black text-black' : 'text-gray-400 hover:text-black'}"
             onclick={() => selectCategory(category as string)}
+            style="box-shadow: none; border-radius: 0; border: none;"
           >
-            <span class="w-7 h-7 mb-1 flex items-center justify-center">
-              {@html categoryIcons[category] || ''}
+            <span class="w-6 h-6 mb-1 flex items-center justify-center">
+              {@html categoryIcons[category] || DefaultIcon}
             </span>
-            <span class="text-xs font-semibold">{category}</span>
+            <span class="text-xs font-normal">{category}</span>
           </button>
         {/each}
       {/if}
